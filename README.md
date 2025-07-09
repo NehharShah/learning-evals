@@ -32,7 +32,7 @@ cd llm-evaluation-tool
 2. Install dependencies:
 ``bash
 npm install
-```
+``
 
 3. Run the development server:
 ``bash
@@ -78,7 +78,7 @@ prompt,expected_output
 
 ## 📁 Project Structure
 
-``
+```
 ├── app/
 │   ├── layout.tsx          # Root layout
 │   └── page.tsx            # Main page
@@ -90,7 +90,7 @@ prompt,expected_output
 │   └── score-bar.tsx       # Score visualization component
 ├── llm-evaluation-tool.tsx # Main application component
 └── README.md
-``
+```
 
 ## 🚀 Deployment
 
