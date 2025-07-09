@@ -1,0 +1,176 @@
+"""
+Pydantic models for API requests and responses
+Matches frontend data structures and expectations
+"""
+
+from pydantic import BaseModel, Field, validator
+from typing import List, Optional, Dict, Any, Union
+from datetime import datetime
+from enum import Enum
+
+
+class ModelName(str, Enum):
+    """Available LLM models"""
+    GPT_4 = "gpt-4"
+    GPT_35_TURBO = "gpt-3.5-turbo"
+    GPT_4_TURBO = "gpt-4-turbo-preview"
+    CLAUDE_3 = "claude-3"
+    GEMINI_PRO = "gemini-pro"
+    LLAMA_2 = "llama-2"
+
+
+class ExportFormat(str, Enum):
+    """Supported export formats"""
+    CSV = "csv"
+    JSON = "json"
+
+
+# Upload Models
+class PromptData(BaseModel):
+    """Individual prompt data structure"""
+    prompt: str = Field(..., description="The input prompt")
+    expected_output: str = Field(..., description="Expected model response")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+    
+    @validator("prompt", "expected_output")
+    def validate_not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Field cannot be empty")
+        return v.strip()
+
+
+class UploadResponse(BaseModel):
+    """Response for file upload endpoint"""
+    success: bool = Field(..., description="Whether upload was successful")
+    message: str = Field(..., description="Status message")
+    data: List[PromptData] = Field(..., description="Parsed prompt data")
+    total_prompts: int = Field(..., description="Total number of prompts")
+    preview: List[PromptData] = Field(..., description="First 5 prompts for preview")
+
+
+# Evaluation Models
+class ModelParameters(BaseModel):
+    """LLM model parameters"""
+    temperature: float = Field(0.7, ge=0.0, le=2.0, description="Sampling temperature")
+    max_tokens: int = Field(1000, ge=1, le=4000, description="Maximum tokens to generate")
+    top_p: float = Field(1.0, ge=0.0, le=1.0, description="Top-p sampling parameter")
+    frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0, description="Frequency penalty")
+
+
+class EvaluationRequest(BaseModel):
+    """Request for evaluation endpoint"""
+    prompts: List[PromptData] = Field(..., description="List of prompts to evaluate")
+    model: ModelName = Field(..., description="Selected model for evaluation")
+    parameters: Optional[ModelParameters] = Field(None, description="Model parameters")
+    
+    @validator("prompts")
+    def validate_prompts_not_empty(cls, v):
+        if not v:
+            raise ValueError("Prompts list cannot be empty")
+        if len(v) > 100:  # Reasonable limit
+            raise ValueError("Maximum 100 prompts per evaluation")
+        return v
+
+
+class EvaluationResult(BaseModel):
+    """Individual evaluation result"""
+    id: Union[int, str] = Field(..., description="Unique result identifier")
+    prompt: str = Field(..., description="Original prompt")
+    model_response: str = Field(..., description="Model's response", alias="modelResponse")
+    expected_output: str = Field(..., description="Expected output", alias="expectedOutput")
+    exact_match: float = Field(..., ge=0, le=100, description="Exact match score (percentage)", alias="exactMatch")
+    fuzzy_match: float = Field(..., ge=0, le=100, description="Fuzzy match score (percentage)", alias="fuzzyMatch")
+    toxicity: bool = Field(..., description="Whether content is flagged as toxic")
+    model: str = Field(..., description="Model used for evaluation")
+    timestamp: str = Field(..., description="ISO timestamp of evaluation")
+    parameters: Optional[ModelParameters] = Field(None, description="Model parameters used")
+    security_flags: Optional[List[str]] = Field(None, description="Security warnings", alias="securityFlags")
+    
+    class Config:
+        allow_population_by_field_name = True
+
+
+class EvaluationResponse(BaseModel):
+    """Response for evaluation endpoint"""
+    success: bool = Field(..., description="Whether evaluation was successful")
+    message: str = Field(..., description="Status message")
+    results: List[EvaluationResult] = Field(..., description="Evaluation results")
+    total_evaluations: int = Field(..., description="Total number of evaluations")
+    summary: Dict[str, Any] = Field(..., description="Evaluation summary statistics")
+
+
+class EvaluationProgress(BaseModel):
+    """Real-time evaluation progress"""
+    current: int = Field(..., description="Current evaluation number")
+    total: int = Field(..., description="Total evaluations")
+    percentage: float = Field(..., ge=0, le=100, description="Progress percentage")
+    status: str = Field(..., description="Current status")
+    estimated_time_remaining: Optional[int] = Field(None, description="Estimated seconds remaining")
+
+
+# Export Models
+class ExportRequest(BaseModel):
+    """Request for export endpoint"""
+    format: ExportFormat = Field(..., description="Export format")
+    results: Optional[List[EvaluationResult]] = Field(None, description="Specific results to export")
+    include_metadata: bool = Field(True, description="Whether to include metadata")
+
+
+class ExportResponse(BaseModel):
+    """Response for export endpoint"""
+    success: bool = Field(..., description="Whether export was successful")
+    message: str = Field(..., description="Status message")
+    download_url: Optional[str] = Field(None, description="Download URL for the exported file")
+    filename: str = Field(..., description="Generated filename")
+
+
+# Security Models
+class SecurityAlert(BaseModel):
+    """Security alert for suspicious content"""
+    type: str = Field(..., description="Type of security alert")
+    severity: str = Field(..., description="Severity level (low, medium, high)")
+    message: str = Field(..., description="Alert message")
+    detected_patterns: List[str] = Field(..., description="Detected suspicious patterns")
+
+
+class SecurityAnalysis(BaseModel):
+    """Security analysis result"""
+    is_suspicious: bool = Field(..., description="Whether content is suspicious")
+    alerts: List[SecurityAlert] = Field(..., description="List of security alerts")
+    score: float = Field(..., ge=0, le=100, description="Security score (higher is safer)")
+
+
+# Common Models
+class ErrorResponse(BaseModel):
+    """Standard error response"""
+    success: bool = Field(False, description="Always false for errors")
+    error: str = Field(..., description="Error type")
+    message: str = Field(..., description="Error message")
+    details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
+
+
+class HealthCheck(BaseModel):
+    """Health check response"""
+    status: str = Field(..., description="Service status")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Current timestamp")
+    version: str = Field("1.0.0", description="API version")
+    environment: str = Field(..., description="Environment name")
+
+
+# Summary Statistics Models
+class EvaluationSummary(BaseModel):
+    """Summary statistics for evaluations"""
+    total_prompts: int = Field(..., description="Total number of prompts evaluated")
+    average_exact_match: float = Field(..., ge=0, le=100, description="Average exact match score")
+    average_fuzzy_match: float = Field(..., ge=0, le=100, description="Average fuzzy match score")
+    flagged_prompts: int = Field(..., description="Number of flagged prompts")
+    security_score: float = Field(..., ge=0, le=100, description="Overall security score")
+    models_used: List[str] = Field(..., description="List of models used")
+    evaluation_time: float = Field(..., description="Total evaluation time in seconds")
+
+
+class ScoreDistribution(BaseModel):
+    """Score distribution data for charts"""
+    range: str = Field(..., description="Score range (e.g., '0-25%')")
+    exact_match: int = Field(..., description="Count of exact matches in range")
+    fuzzy_match: int = Field(..., description="Count of fuzzy matches in range") 
