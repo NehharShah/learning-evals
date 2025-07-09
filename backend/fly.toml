@@ -1,0 +1,73 @@
+# Fly.io deployment configuration for LLM Evaluation Tool Backend
+app = "llm-eval-backend"
+primary_region = "sjc"  # San Jose, CA - change to your preferred region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ENVIRONMENT = "production"
+  DEBUG = "false"
+  LOG_LEVEL = "INFO"
+  LOG_FORMAT = "json"
+  RATE_LIMIT_PER_MINUTE = "60"
+  EVALUATION_RATE_LIMIT_PER_MINUTE = "10"
+  MAX_FILE_SIZE_MB = "5"
+  ALLOWED_FILE_TYPES = ".csv,.jsonl"
+
+# HTTP service configuration
+[[services]]
+  internal_port = 8000
+  protocol = "tcp"
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  # HTTP handlers
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # Health checks
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+# Machine configuration
+[vm]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Deployment settings
+[deploy]
+  release_command = "echo 'Deployment starting'"
+
+# Process groups (if you want to run multiple processes)
+[processes]
+  app = "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1"
+
+# Secrets (set these with `fly secrets set`)
+# OPENAI_API_KEY - Your OpenAI API key
+# SECRET_KEY - A secure random string for application security
+# ALLOWED_ORIGINS - Comma-separated list of allowed origins for CORS
+
+# Example commands to set secrets:
+# fly secrets set OPENAI_API_KEY=your_openai_api_key_here
+# fly secrets set SECRET_KEY=your_secure_random_string_here
+# fly secrets set ALLOWED_ORIGINS=https://your-frontend-domain.com 

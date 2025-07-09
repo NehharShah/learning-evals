@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=standard
+      - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+      - RATE_LIMIT_PER_MINUTE=60
+      - EVALUATION_RATE_LIMIT_PER_MINUTE=10
+      - MAX_FILE_SIZE_MB=5
+      # Set these in your .env file
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+    volumes:
+      # Mount logs directory for persistent logging
+      - ./logs:/app/logs
+      # Mount .env file if it exists
+      - ./.env:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Optional: Add a reverse proxy for production-like setup
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+    profiles:
+      - with-proxy
+    restart: unless-stopped
+
+# Optional networks for service isolation
+networks:
+  default:
+    driver: bridge
+
+# Volumes for persistent data
+volumes:
+  logs:
+    driver: local 
