@@ -24,20 +24,20 @@ A minimalist React application for evaluating Large Language Model (LLM) perform
 ### Installation
 
 1. Clone the repository:
-\`\`\`bash
+``bash
 git clone https://github.com/your-username/llm-evaluation-tool.git
 cd llm-evaluation-tool
-\`\`\`
+``
 
 2. Install dependencies:
-\`\`\`bash
+``bash
 npm install
-\`\`\`
+```
 
 3. Run the development server:
-\`\`\`bash
+``bash
 npm run dev
-\`\`\`
+``
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
@@ -48,17 +48,17 @@ npm run dev
 Your dataset should contain at least two fields:
 
 **CSV Example:**
-\`\`\`csv
+``csv
 prompt,expected_output
 "What is the capital of France?","Paris"
 "Explain quantum computing","Quantum computing uses quantum mechanics principles"
-\`\`\`
+``
 
 **JSONL Example:**
-\`\`\`jsonl
+``jsonl
 {"prompt": "What is the capital of France?", "expected_output": "Paris"}
 {"prompt": "Explain quantum computing", "expected_output": "Quantum computing uses quantum mechanics principles"}
-\`\`\`
+``
 
 ### Workflow
 
@@ -78,7 +78,7 @@ prompt,expected_output
 
 ## 📁 Project Structure
 
-\`\`\`
+``
 ├── app/
 │   ├── layout.tsx          # Root layout
 │   └── page.tsx            # Main page
@@ -90,7 +90,7 @@ prompt,expected_output
 │   └── score-bar.tsx       # Score visualization component
 ├── llm-evaluation-tool.tsx # Main application component
 └── README.md
-\`\`\`
+``
 
 ## 🚀 Deployment
 
