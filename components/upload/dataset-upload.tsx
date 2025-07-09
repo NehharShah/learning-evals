@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { useDropzone } from "react-dropzone"
+import type React from "react"
+
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -19,9 +20,12 @@ export function DatasetUpload({ onDatasetUpload }: DatasetUploadProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [previewData, setPreviewData] = useState<any[] | null>(null)
+  const [isDragActive, setIsDragActive] = useState(false)
 
   const parseCSV = (text: string) => {
     const lines = text.split("\n").filter((line) => line.trim())
+    if (lines.length === 0) return []
+
     const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""))
 
     return lines.slice(1).map((line) => {
@@ -98,21 +102,32 @@ export function DatasetUpload({ onDatasetUpload }: DatasetUploadProps) {
     }
   }
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      processFile(acceptedFiles[0])
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      processFile(files[0])
     }
-  }, [])
+  }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "text/csv": [".csv"],
-      "application/json": [".jsonl"],
-      "text/plain": [".jsonl"],
-    },
-    multiple: false,
-  })
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragActive(false)
+
+    const files = event.dataTransfer.files
+    if (files && files.length > 0) {
+      processFile(files[0])
+    }
+  }
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragActive(true)
+  }
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragActive(false)
+  }
 
   const clearUpload = () => {
     setUploadedFile(null)
@@ -132,12 +147,16 @@ export function DatasetUpload({ onDatasetUpload }: DatasetUploadProps) {
       <CardContent className="space-y-4">
         {!uploadedFile ? (
           <div
-            {...getRootProps()}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
               isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
             }`}
+            data-upload-area
+            tabIndex={0}
           >
-            <input {...getInputProps()} />
+            <input type="file" accept=".csv,.jsonl" onChange={handleFileSelect} className="hidden" id="file-upload" />
             <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             {isDragActive ? (
               <p className="text-lg">Drop your dataset here...</p>
@@ -145,7 +164,9 @@ export function DatasetUpload({ onDatasetUpload }: DatasetUploadProps) {
               <div>
                 <p className="text-lg mb-2">Drag & drop your dataset here</p>
                 <p className="text-sm text-muted-foreground mb-4">or click to browse files</p>
-                <Button variant="outline">Choose File</Button>
+                <Button variant="outline" onClick={() => document.getElementById("file-upload")?.click()}>
+                  Choose File
+                </Button>
               </div>
             )}
             <div className="mt-4 flex justify-center gap-2">

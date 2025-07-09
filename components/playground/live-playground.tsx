@@ -110,6 +110,7 @@ export function LivePlayground({ availableModels, onAddResult }: PlaygroundProps
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             className="min-h-[100px]"
+            data-playground-input
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{prompt.length} characters</span>

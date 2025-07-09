@@ -29,7 +29,7 @@ interface EvaluationTableProps {
   selectedModels: string[]
 }
 
-export function EvaluationTable({ results, selectedModels }: EvaluationTableProps) {
+export function EvaluationTable({ results = [], selectedModels = [] }: EvaluationTableProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortField, setSortField] = useState<keyof EvaluationResult>("timestamp")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
@@ -37,32 +37,43 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
   const [filterScore, setFilterScore] = useState<string>("all")
 
   const filteredAndSortedResults = useMemo(() => {
-    const filtered = results.filter(result => {
-      const matchesSearch = result.prompt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           result.modelResponse.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesModel = filterModel === "all" || result.model === filterModel
-      const matchesScore = filterScore === "all" || 
-                          (filterScore === "high" && result.exactMatch >= 80) ||
-                          (filterScore === "medium" && result.exactMatch >= 60 && result.exactMatch < 80) ||
-                          (filterScore === "low" && result.exactMatch < 60)
-      
+    if (!results || results.length === 0) return []
+
+    const filtered = results.filter((result) => {
+      if (!result) return false
+
+      const prompt = result.prompt || ""
+      const modelResponse = result.modelResponse || ""
+      const model = result.model || ""
+      const exactMatch = result.exactMatch || 0
+
+      const matchesSearch =
+        prompt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        modelResponse.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesModel = filterModel === "all" || model === filterModel
+      const matchesScore =
+        filterScore === "all" ||
+        (filterScore === "high" && exactMatch >= 80) ||
+        (filterScore === "medium" && exactMatch >= 60 && exactMatch < 80) ||
+        (filterScore === "low" && exactMatch < 60)
+
       return matchesSearch && matchesModel && matchesScore
     })
 
     return filtered.sort((a, b) => {
+      if (!a || !b) return 0
+
       const aValue = a[sortField]
       const bValue = b[sortField]
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === "asc" 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue)
+
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
       }
-      
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
         return sortDirection === "asc" ? aValue - bValue : bValue - aValue
       }
-      
+
       return 0
     })
   }, [results, searchTerm, sortField, sortDirection, filterModel, filterScore])
@@ -76,12 +87,14 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
     }
   }
 
-  const uniqueModels = Array.from(new Set(results.map(r => r.model)))
+  const uniqueModels = Array.from(new Set(results.map((r) => r?.model).filter(Boolean)))
 
   // Group results by prompt for multi-model comparison
   const groupedResults = useMemo(() => {
     const groups: { [key: string]: EvaluationResult[] } = {}
-    filteredAndSortedResults.forEach(result => {
+    filteredAndSortedResults.forEach((result) => {
+      if (!result || !result.prompt) return
+
       if (!groups[result.prompt]) {
         groups[result.prompt] = []
       }
@@ -92,16 +105,31 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
 
   const isMultiModelComparison = selectedModels.length > 1
 
+  if (!results || results.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Evaluation Results</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              No evaluation results yet. Upload a dataset and run an evaluation to see results here.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Evaluation Results</span>
-          <Badge variant="secondary">
-            {filteredAndSortedResults.length} results
-          </Badge>
+          <Badge variant="secondary">{filteredAndSortedResults.length} results</Badge>
         </CardTitle>
-        
+
         {/* Filters */}
         <div className="flex flex-wrap gap-4">
           <div className="relative flex-1 min-w-[200px]">
@@ -111,17 +139,20 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
+              data-search-input
             />
           </div>
-          
+
           <Select value={filterModel} onValueChange={setFilterModel}>
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="All Models" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Models</SelectItem>
-              {uniqueModels.map(model => (
-                <SelectItem key={model} value={model}>{model}</SelectItem>
+              {uniqueModels.map((model) => (
+                <SelectItem key={model} value={model}>
+                  {model}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -134,19 +165,19 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
               <SelectItem value="all">All Scores</SelectItem>
               <SelectItem value="high">High (80%+)</SelectItem>
               <SelectItem value="medium">Medium (60-79%)</SelectItem>
-              <SelectItem value="low\">Low (<60%)</SelectItem>
+              <SelectItem value="low">Low (&lt;60%)</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[300px]">
-                  <Button variant="ghost" onClick={() => handleSort('prompt')} className="h-auto p-0 font-medium">
+                  <Button variant="ghost" onClick={() => handleSort("prompt")} className="h-auto p-0 font-medium">
                     Prompt
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
@@ -157,17 +188,15 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
                     <TableHead className="w-[200px]">Expected Output</TableHead>
                   </>
                 )}
-                {isMultiModelComparison && (
-                  <TableHead className="w-[400px]">Model Responses</TableHead>
-                )}
+                {isMultiModelComparison && <TableHead className="w-[400px]">Model Responses</TableHead>}
                 <TableHead className="w-[200px]">
-                  <Button variant="ghost" onClick={() => handleSort('exactMatch')} className="h-auto p-0 font-medium">
+                  <Button variant="ghost" onClick={() => handleSort("exactMatch")} className="h-auto p-0 font-medium">
                     Scores
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead className="w-[100px]">
-                  <Button variant="ghost" onClick={() => handleSort('model')} className="h-auto p-0 font-medium">
+                  <Button variant="ghost" onClick={() => handleSort("model")} className="h-auto p-0 font-medium">
                     Model
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
@@ -176,119 +205,117 @@ export function EvaluationTable({ results, selectedModels }: EvaluationTableProp
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isMultiModelComparison ? (
-                // Multi-model comparison view
-                Object.entries(groupedResults).map(([prompt, promptResults]) => (
-                  <TableRow key={prompt}>
-                    <TableCell>
-                      <div className="flex items-start">
-                        <span className="text-sm">
-                          {prompt.length > 100 ? `${prompt.substring(0, 100)}...` : prompt}
-                        </span>
-                        <SecurityFlag prompt={prompt} />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-3">
-                        {promptResults.map((result) => (
-                          <div key={result.id} className="border rounded p-2">
-                            <div className="flex items-center justify-between mb-1">
-                              <Badge variant="outline" className="text-xs">
-                                {result.model}
-                              </Badge>
-                              {result.toxicity && (
-                                <AlertTriangle className="w-3 h-3 text-red-500" />
-                              )}
+              {isMultiModelComparison
+                ? // Multi-model comparison view
+                  Object.entries(groupedResults).map(([prompt, promptResults]) => (
+                    <TableRow key={prompt}>
+                      <TableCell>
+                        <div className="flex items-start">
+                          <span className="text-sm">
+                            {prompt.length > 100 ? `${prompt.substring(0, 100)}...` : prompt}
+                          </span>
+                          <SecurityFlag prompt={prompt} />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-3">
+                          {promptResults.map((result) => (
+                            <div key={result.id} className="border rounded p-2">
+                              <div className="flex items-center justify-between mb-1">
+                                <Badge variant="outline" className="text-xs">
+                                  {result.model}
+                                </Badge>
+                                {result.toxicity && <AlertTriangle className="w-3 h-3 text-red-500" />}
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {result.modelResponse && result.modelResponse.length > 80
+                                  ? `${result.modelResponse.substring(0, 80)}...`
+                                  : result.modelResponse || "No response"}
+                              </p>
+                              <ScoreBars
+                                exactMatch={result.exactMatch || 0}
+                                fuzzyMatch={result.fuzzyMatch || 0}
+                                toxicity={result.toxicity || false}
+                              />
                             </div>
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {result.modelResponse.length > 80 
-                                ? `${result.modelResponse.substring(0, 80)}...` 
-                                : result.modelResponse}
-                            </p>
-                            <ScoreBars 
-                              exactMatch={result.exactMatch} 
-                              fuzzyMatch={result.fuzzyMatch} 
-                              toxicity={result.toxicity} 
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {promptResults.map((result) => (
+                            <Badge key={result.id} variant="secondary" className="text-xs">
+                              {result.model}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {promptResults.map((result) => (
+                            <DiffModal
+                              key={result.id}
+                              modelResponse={result.modelResponse || ""}
+                              expectedOutput={result.expectedOutput || ""}
+                              score={Math.max(result.exactMatch || 0, result.fuzzyMatch || 0)}
                             />
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        {promptResults.map((result) => (
-                          <Badge key={result.id} variant="secondary" className="text-xs">
-                            {result.model}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        {promptResults.map((result) => (
-                          <DiffModal
-                            key={result.id}
-                            modelResponse={result.modelResponse}
-                            expectedOutput={result.expectedOutput}
-                            score={Math.max(result.exactMatch, result.fuzzyMatch)}
-                          />
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                // Single model view
-                filteredAndSortedResults.map((result) => (
-                  <TableRow key={result.id}>
-                    <TableCell>
-                      <div className="flex items-start">
-                        <span className="text-sm">
-                          {result.prompt.length > 100 ? `${result.prompt.substring(0, 100)}...` : result.prompt}
+                          ))}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : // Single model view
+                  filteredAndSortedResults.map((result) => (
+                    <TableRow key={result.id}>
+                      <TableCell>
+                        <div className="flex items-start">
+                          <span className="text-sm">
+                            {result.prompt && result.prompt.length > 100
+                              ? `${result.prompt.substring(0, 100)}...`
+                              : result.prompt || "No prompt"}
+                          </span>
+                          <SecurityFlag prompt={result.prompt || ""} />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {result.modelResponse && result.modelResponse.length > 100
+                            ? `${result.modelResponse.substring(0, 100)}...`
+                            : result.modelResponse || "No response"}
                         </span>
-                        <SecurityFlag prompt={result.prompt} />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {result.modelResponse.length > 100
-                          ? `${result.modelResponse.substring(0, 100)}...`
-                          : result.modelResponse}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {result.expectedOutput.length > 100
-                          ? `${result.expectedOutput.substring(0, 100)}...`
-                          : result.expectedOutput}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <ScoreBars 
-                        exactMatch={result.exactMatch} 
-                        fuzzyMatch={result.fuzzyMatch} 
-                        toxicity={result.toxicity} 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {result.model}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DiffModal
-                        modelResponse={result.modelResponse}
-                        expectedOutput={result.expectedOutput}
-                        score={Math.max(result.exactMatch, result.fuzzyMatch)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {result.expectedOutput && result.expectedOutput.length > 100
+                            ? `${result.expectedOutput.substring(0, 100)}...`
+                            : result.expectedOutput || "No expected output"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <ScoreBars
+                          exactMatch={result.exactMatch || 0}
+                          fuzzyMatch={result.fuzzyMatch || 0}
+                          toxicity={result.toxicity || false}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {result.model || "Unknown"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DiffModal
+                          modelResponse={result.modelResponse || ""}
+                          expectedOutput={result.expectedOutput || ""}
+                          score={Math.max(result.exactMatch || 0, result.fuzzyMatch || 0)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
         </div>
       </CardContent>
     </Card>
-  )\
+  )
 }
