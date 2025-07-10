@@ -1,9 +1,6 @@
 # LLM Evaluation Tool
 
-A minimalist React application for evaluating Large Language Model (LLM) performance with clean UI and comprehensive metrics.
-
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/nihar-shahs-projects-60f0b993/v0-llm-evals)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/XjtZEK3f5U8)
+A full-stack application for evaluating Large Language Model (LLM) performance with clean UI, comprehensive metrics, and a secure FastAPI backend.
 
 ## ✨ Features
 
@@ -18,28 +15,38 @@ A minimalist React application for evaluating Large Language Model (LLM) perform
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+ (for frontend)
+- Python 3.11+ (for backend)
+- OpenAI API key
 
-### Installation
+### Quick Start
 
-1. Clone the repository:
-``bash
-git clone https://github.com/your-username/llm-evaluation-tool.git
-cd llm-evaluation-tool
-``
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/llm-evaluation-tool.git
+   cd llm-evaluation-tool
+   ```
 
-2. Install dependencies:
-``bash
-npm install
-``
+2. **Set up the backend**:
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   cp env.template .env
+   # Edit .env with your OpenAI API key
+   uvicorn main:app --reload --port 8000
+   ```
 
-3. Run the development server:
-``bash
-npm run dev
-``
+3. **Set up the frontend** (in a new terminal):
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. **Open the application**:
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - Backend API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## 📖 Usage
 
@@ -70,62 +77,84 @@ prompt,expected_output
 
 ## 🛠️ Tech Stack
 
+### Frontend
 - **Framework**: Next.js 14 with App Router
 - **UI Library**: shadcn/ui + Tailwind CSS
 - **Language**: TypeScript
 - **Icons**: Lucide React
-- **Deployment**: Vercel
+
+### Backend
+- **Framework**: FastAPI (Python 3.11+)
+- **API Integration**: OpenAI API
+- **Security**: Rate limiting, prompt injection detection
+- **Data Processing**: rapidfuzz for fuzzy matching
+- **Deployment**: Docker, Fly.io, Render compatible
 
 ## 📁 Project Structure
 
 ```
-├── app/
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Main page
-├── components/
-│   ├── ui/                 # shadcn/ui components
-│   ├── file-upload.tsx     # Dataset upload component
-│   ├── metrics-sidebar.tsx # Evaluation metrics sidebar
-│   ├── results-table.tsx   # Results display table
-│   └── score-bar.tsx       # Score visualization component
-├── llm-evaluation-tool.tsx # Main application component
-└── README.md
+├── frontend/               # Next.js React frontend
+│   ├── app/
+│   │   ├── layout.tsx     # Root layout
+│   │   └── page.tsx       # Main page
+│   ├── components/
+│   │   ├── ui/            # shadcn/ui components
+│   │   ├── upload/        # Dataset upload components
+│   │   ├── results/       # Results display components
+│   │   └── models/        # Model selection components
+│   └── llm-evaluation-tool.tsx
+└── backend/                # FastAPI Python backend
+    ├── main.py            # FastAPI app entry point
+    ├── app/
+    │   ├── config.py      # Configuration management
+    │   ├── models/        # Pydantic data models
+    │   ├── routers/       # API route handlers
+    │   ├── middleware/    # Security middleware
+    │   └── utils/         # Utilities and helpers
+    ├── requirements.txt   # Python dependencies
+    ├── Dockerfile         # Container configuration
+    └── README.md          # Backend documentation
 ```
 
 ## 🚀 Deployment
 
-This project is automatically deployed on Vercel. Any changes pushed to the main branch will trigger a new deployment.
+This is a full-stack application with separate frontend and backend components.
 
-**Live Demo**: [https://vercel.com/nihar-shahs-projects-60f0b993/v0-llm-evals](https://vercel.com/nihar-shahs-projects-60f0b993/v0-llm-evals)
+### Frontend Deployment
+- Deploy the Next.js frontend to Vercel, Netlify, or any static hosting platform
+- Configure environment variables to point to your backend API
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Backend Deployment  
+- Deploy the FastAPI backend using Docker to Fly.io, Render, or any container platform
+- Set up environment variables including your OpenAI API key
+- See `backend/README.md` for detailed deployment instructions
 
 ## 🗺️ Roadmap
 
-- [ ] Real LLM API integration
+- [x] Real LLM API integration (OpenAI GPT models)
+- [x] Export functionality (CSV, JSON)
+- [x] Batch processing for large datasets
+- [x] Security features (prompt injection detection, rate limiting)
 - [ ] Advanced evaluation metrics (BLEU, ROUGE, Semantic Similarity)
-- [ ] Batch processing for large datasets
-- [ ] Export functionality (CSV, JSON)
-- [ ] Historical evaluation tracking
-- [ ] Custom model configuration
+- [ ] Multi-provider support (Anthropic Claude, Google Gemini, Meta Llama)
+- [ ] Historical evaluation tracking with database
+- [ ] Custom model configuration and fine-tuning
 - [ ] A/B testing between models
+- [ ] Real-time collaboration features
+- [ ] Advanced analytics and reporting
 
-## 📄 License
+## Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is an LLM evaluation tool for testing and comparing language model performance. Contributions are welcome in areas like:
+- Adding new evaluation metrics and methodologies
+- Supporting additional LLM providers and models
+- Improving the UI/UX and visualization features
+- Enhancing data processing and analysis capabilities
+- Bug fixes and documentation improvements
 
 ## 🙏 Acknowledgments
 
-- Built with [v0.dev](https://v0.dev) for rapid prototyping
 - UI components from [shadcn/ui](https://ui.shadcn.com)
 - Icons from [Lucide](https://lucide.dev)
-
----
-
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+- FastAPI framework for the backend API
+- OpenAI for LLM API access
