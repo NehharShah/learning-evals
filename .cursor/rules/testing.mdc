@@ -1,0 +1,49 @@
+---
+description: Testing standards and best practices
+globs: ["**/*.test.*", "**/*.spec.*", "**/test/**/*", "**/tests/**/*"]
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Test Organization
+- Write unit tests for all critical functions and components
+- Create integration tests for API endpoints
+- Implement end-to-end tests for key user workflows
+- Use proper test file naming conventions (.test.ts, .spec.ts)
+- Organize tests in logical groups with describe blocks
+
+## React Component Testing
+- Test component rendering and props
+- Test user interactions and event handlers
+- Test error states and edge cases
+- Use proper testing utilities (React Testing Library)
+- Mock external dependencies appropriately
+
+## API Testing
+- Test all API endpoints with various input scenarios
+- Test authentication and authorization flows
+- Test error scenarios and status codes
+- Validate request/response schemas
+- Test rate limiting and security measures
+
+## Test Quality
+- Write clear, descriptive test names
+- Use proper assertions and matchers
+- Implement proper setup and teardown
+- Use proper mocking for external dependencies
+- Ensure tests are independent and repeatable
+
+## Coverage and Performance
+- Maintain good test coverage for critical paths
+- Test both success and failure scenarios
+- Include edge cases and boundary conditions
+- Test performance-critical operations
+- Use proper test data and fixtures
+
+## Security Testing
+- Test authentication and authorization scenarios
+- Test input validation and sanitization
+- Test file upload security measures
+- Test rate limiting and abuse prevention
+- Test error handling that doesn't leak information

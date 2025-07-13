@@ -1,0 +1,63 @@
+---
+description: Project-specific rules for learning evaluation tool
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Learning Evaluation Tool Rules
+
+## Evaluation Processing
+- Ensure evaluation results are processed accurately and consistently
+- Implement proper validation for different evaluation metrics
+- Handle various data formats and model outputs gracefully
+- Maintain data integrity throughout the evaluation pipeline
+- Implement proper error handling for failed evaluations
+
+## Model Comparison Features
+- Implement robust model comparison functionality
+- Support multiple evaluation metrics simultaneously
+- Provide clear visualization of performance differences
+- Handle edge cases in model comparison (missing data, different formats)
+- Ensure fair and unbiased comparison methodologies
+
+## Data Visualization
+- Create clear, accessible charts and tables for evaluation results
+- Implement proper data formatting and number precision
+- Use consistent color schemes and visual hierarchy
+- Provide proper legends and axis labels
+- Ensure charts are responsive and accessible
+
+## File Upload and Processing
+- Implement secure file upload with proper validation
+- Support common evaluation file formats (CSV, JSON, etc.)
+- Provide clear upload progress and error feedback
+- Handle large files efficiently without blocking UI
+- Implement proper file storage and cleanup
+
+## Export and Sharing
+- Provide multiple export formats (PDF, CSV, JSON)
+- Implement proper data formatting for exports
+- Ensure exported data maintains accuracy and completeness
+- Provide shareable links with proper access controls
+- Include metadata and timestamps in exports
+
+## Playground Functionality
+- Implement interactive testing playground
+- Provide real-time feedback and validation
+- Support different input formats and scenarios
+- Implement proper error handling and user feedback
+- Ensure playground results are consistent with full evaluations
+
+## User Experience
+- Implement proper loading states for long-running evaluations
+- Provide clear progress indicators and status updates
+- Implement proper error messages and recovery options
+- Ensure accessibility compliance (WCAG guidelines)
+- Provide helpful tooltips and documentation
+
+## Performance Optimization
+- Implement efficient data processing for large datasets
+- Use proper caching strategies for evaluation results
+- Optimize chart rendering for large datasets
+- Implement proper pagination for large result sets
+- Use lazy loading for improved initial load times

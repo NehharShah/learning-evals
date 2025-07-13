@@ -1,0 +1,55 @@
+---
+description: Performance optimization guidelines and best practices
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Performance Optimization Guidelines
+
+## Frontend Performance
+- Use React.memo for expensive components
+- Implement proper useCallback and useMemo for optimization
+- Use lazy loading for components and routes
+- Implement proper code splitting with dynamic imports
+- Optimize bundle size with proper tree shaking
+- Use proper image optimization and lazy loading
+
+## Backend Performance
+- Use async/await patterns for I/O operations
+- Implement proper database connection pooling
+- Use caching strategies (Redis, in-memory) appropriately
+- Optimize database queries with proper indexing
+- Implement proper pagination for large datasets
+- Use background tasks for heavy processing
+
+## Data Processing
+- Stream large files instead of loading entirely in memory
+- Use proper data structures for efficient operations
+- Implement proper batch processing for bulk operations
+- Use worker threads for CPU-intensive tasks
+- Optimize algorithm complexity where possible
+- Implement proper memory management
+
+## Network Optimization
+- Use proper HTTP caching headers
+- Implement request/response compression
+- Use CDN for static assets
+- Implement proper retry logic with exponential backoff
+- Use proper connection pooling
+- Minimize payload sizes
+
+## Monitoring and Metrics
+- Implement proper performance monitoring
+- Use profiling tools to identify bottlenecks
+- Monitor memory usage and garbage collection
+- Track API response times and throughput
+- Implement proper alerting for performance issues
+- Use proper logging for performance debugging
+
+## Caching Strategies
+- Implement proper cache invalidation strategies
+- Use appropriate cache expiration times
+- Implement cache warming for critical data
+- Use proper cache keys and namespacing
+- Monitor cache hit rates and efficiency
+- Implement proper cache fallback mechanisms

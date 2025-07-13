@@ -1,0 +1,142 @@
+# Learning Evals Project - Cursor Rules
+
+## General Principles
+- Write clean, maintainable, and well-documented code
+- Follow established patterns and conventions in the codebase
+- Prioritize security and performance
+- Use TypeScript strictly with proper typing
+- Implement proper error handling and logging
+- Follow the principle of least privilege for security
+
+## Frontend (Next.js/React/TypeScript)
+
+### Code Style
+- Use TypeScript for all files, avoid `any` type
+- Prefer functional components with hooks over class components
+- Use proper prop types and interfaces
+- Follow React best practices (hooks rules, component composition)
+- Use consistent naming: PascalCase for components, camelCase for functions/variables
+- Prefer named exports over default exports for components
+
+### File Organization
+- Components should be in `/components` directory with proper subdirectories
+- Use kebab-case for file names (e.g., `evaluation-table.tsx`)
+- Co-locate related files (component + styles + tests)
+- Keep components focused and single-purpose
+
+### React Patterns
+- Use React hooks appropriately (useState, useEffect, useMemo, useCallback)
+- Implement proper loading states and error boundaries
+- Use React.memo for performance optimization when needed
+- Follow the composition pattern over inheritance
+- Use proper key props for lists
+
+### UI/UX Guidelines
+- Use shadcn/ui components consistently
+- Implement proper accessibility (ARIA labels, keyboard navigation)
+- Follow responsive design principles with Tailwind CSS
+- Maintain consistent spacing and typography
+- Implement proper loading states and error messages
+- Use proper form validation and user feedback
+
+## Backend (FastAPI/Python)
+
+### Code Style
+- Follow PEP 8 style guidelines
+- Use type hints for all function parameters and return types
+- Use descriptive variable and function names
+- Implement proper docstrings for all functions and classes
+- Use consistent error handling with proper HTTP status codes
+- Follow the dependency injection pattern for FastAPI
+
+### API Design
+- Use proper HTTP methods (GET, POST, PUT, DELETE, PATCH)
+- Implement consistent response formats
+- Use proper status codes and error messages
+- Validate all input data using Pydantic models
+- Implement proper authentication and authorization
+- Use proper request/response models in `/models/schemas.py`
+
+### File Organization
+- Keep routers in `/routers` directory with logical separation
+- Use `/utils` for shared utility functions
+- Keep models and schemas in `/models` directory
+- Implement proper middleware in `/middleware` directory
+- Use proper logging configuration
+
+## Security Guidelines
+- Validate all user inputs
+- Use proper authentication and authorization
+- Implement CORS correctly
+- Use environment variables for sensitive data
+- Sanitize data before processing
+- Implement proper rate limiting
+- Use HTTPS in production
+- Follow OWASP security guidelines
+
+## Data Handling
+- Validate all uploaded files properly
+- Implement proper file type checking
+- Use secure file storage practices
+- Implement proper data sanitization
+- Handle large files efficiently
+- Implement proper backup and recovery
+
+## Testing
+- Write unit tests for critical functions
+- Test API endpoints thoroughly
+- Implement proper error scenario testing
+- Use proper mocking for external dependencies
+- Test security measures
+- Implement integration tests for key workflows
+
+## Performance
+- Implement proper caching strategies
+- Use efficient database queries
+- Optimize file processing operations
+- Implement proper pagination for large datasets
+- Use lazy loading where appropriate
+- Monitor and optimize API response times
+
+## Documentation
+- Document all API endpoints with proper schemas
+- Include examples in API documentation
+- Document complex business logic
+- Keep README files updated
+- Document deployment and setup procedures
+- Include troubleshooting guides
+
+## Git and Development
+- Use meaningful commit messages
+- Keep commits focused and atomic
+- Use proper branch naming conventions
+- Review code before merging
+- Use proper pull request templates
+- Keep dependencies updated
+
+## Environment and Configuration
+- Use environment variables for configuration
+- Separate development, staging, and production configs
+- Document all environment variables
+- Use proper secrets management
+- Implement proper logging levels
+- Use proper monitoring and alerting
+
+## Error Handling
+- Implement proper error boundaries in React
+- Use consistent error response formats in API
+- Log errors appropriately with context
+- Provide meaningful error messages to users
+- Implement proper fallback mechanisms
+- Use proper HTTP status codes
+
+## Specific to Learning Evals
+- Ensure evaluation results are accurately processed
+- Implement proper model comparison features
+- Handle different evaluation metrics correctly
+- Ensure secure file upload and processing
+- Implement proper export functionality
+- Maintain evaluation history and audit trails
+- Ensure proper data visualization in charts and tables
+- Implement proper playground functionality for testing
+- Ensure accessibility in all evaluation interfaces
