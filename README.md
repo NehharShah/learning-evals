@@ -6,7 +6,7 @@ A full-stack application for evaluating Large Language Model (LLM) performance w
 
 - **📁 Dataset Upload**: Support for CSV and JSONL files with drag-and-drop interface
 - **🤖 Model Selection**: Choose from popular LLMs (GPT-4, Claude, Gemini, etc.)
-- **📊 Evaluation Metrics**: Exact Match and Fuzzy Match scoring
+- **📊 Evaluation Metrics**: Exact Match, Fuzzy Match, and Advanced NLP metrics (BLEU, ROUGE, Semantic Similarity)
 - **📈 Score Visualization**: Color-coded progress bars with percentage display
 - **📱 Responsive Design**: Clean, mobile-friendly interface
 - **⚡ Real-time Results**: Live evaluation progress and results display
@@ -135,7 +135,7 @@ This is a full-stack application with separate frontend and backend components.
 - [x] Export functionality (CSV, JSON)
 - [x] Batch processing for large datasets
 - [x] Security features (prompt injection detection, rate limiting)
-- [ ] Advanced evaluation metrics (BLEU, ROUGE, Semantic Similarity)
+- [x] Advanced evaluation metrics (BLEU, ROUGE, Semantic Similarity)
 - [ ] Multi-provider support (Anthropic Claude, Google Gemini, Meta Llama)
 - [ ] Historical evaluation tracking with database
 - [ ] Custom model configuration and fine-tuning
