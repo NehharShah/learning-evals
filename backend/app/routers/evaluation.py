@@ -21,6 +21,7 @@ from app.models import (
     AdvancedMetricsSummary,
     ErrorResponse,
     ModelParameters,
+    ModelInfo,
     PromptData
 )
 from app.utils.evaluation import (
@@ -398,6 +399,7 @@ async def get_evaluation_results(evaluation_id: str):
 
 @router.get(
     "/models",
+    response_model=List[ModelInfo],
     summary="Get available models",
     description="Get list of available LLM models for evaluation"
 )
@@ -406,61 +408,29 @@ async def get_available_models():
     Get information about available LLM models
     
     Returns details about supported models, their capabilities,
-    and recommended use cases.
+    and recommended use cases from all configured providers.
     """
-    return {
-        "models": [
-            {
-                "id": "gpt-4",
-                "name": "GPT-4",
-                "provider": "OpenAI",
-                "description": "Most capable model, best for complex reasoning",
-                "max_tokens": 4000,
-                "recommended_for": ["complex reasoning", "code generation", "analysis"]
-            },
-            {
-                "id": "gpt-3.5-turbo",
-                "name": "GPT-3.5 Turbo",
-                "provider": "OpenAI",
-                "description": "Fast and efficient, good for most tasks",
-                "max_tokens": 4000,
-                "recommended_for": ["general tasks", "conversation", "summarization"]
-            },
-            {
-                "id": "gpt-4-turbo-preview",
-                "name": "GPT-4 Turbo",
-                "provider": "OpenAI",
-                "description": "Latest GPT-4 with improved performance",
-                "max_tokens": 4000,
-                "recommended_for": ["latest capabilities", "performance critical tasks"]
-            },
-            {
-                "id": "claude-3",
-                "name": "Claude 3",
-                "provider": "Anthropic",
-                "description": "Currently mapped to GPT-4 (integration pending)",
-                "max_tokens": 4000,
-                "note": "Full integration coming soon"
-            },
-            {
-                "id": "gemini-pro",
-                "name": "Gemini Pro",
-                "provider": "Google",
-                "description": "Currently mapped to GPT-3.5 (integration pending)",
-                "max_tokens": 4000,
-                "note": "Full integration coming soon"
-            },
-            {
-                "id": "llama-2",
-                "name": "Llama 2",
-                "provider": "Meta",
-                "description": "Currently mapped to GPT-3.5 (integration pending)",
-                "max_tokens": 4000,
-                "note": "Full integration coming soon"
-            }
-        ],
-        "note": "Non-OpenAI models currently fallback to OpenAI models. Full multi-provider support coming soon."
-    }
+    from app.utils.providers import provider_manager
+    
+    # Get all available models from all providers
+    models = provider_manager.get_all_models()
+    
+    # Convert to ModelInfo objects
+    model_infos = []
+    for model in models:
+        model_info = ModelInfo(
+            id=model.id,
+            name=model.name,
+            provider=model.provider,
+            max_tokens=model.max_tokens,
+            context_length=model.context_length,
+            description=model.description,
+            capabilities=model.capabilities,
+            is_available=True
+        )
+        model_infos.append(model_info)
+    
+    return model_infos
 
 
 @router.delete(

@@ -18,6 +18,16 @@ from .advanced_metrics import (
     calculate_semantic_similarity,
     calculate_advanced_metrics
 )
+from .providers import (
+    provider_manager,
+    OpenAIProvider,
+    AnthropicProvider,
+    GoogleProvider,
+    GroqProvider,
+    CustomProvider,
+    ProviderConfig,
+    ModelInfo as ProviderModelInfo
+)
 
 __all__ = [
     "setup_logging",
@@ -35,4 +45,12 @@ __all__ = [
     "calculate_rouge_score",
     "calculate_semantic_similarity",
     "calculate_advanced_metrics",
+    "provider_manager",
+    "OpenAIProvider",
+    "AnthropicProvider",
+    "GoogleProvider",
+    "GroqProvider",
+    "CustomProvider",
+    "ProviderConfig",
+    "ProviderModelInfo",
 ] 

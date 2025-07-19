@@ -10,8 +10,10 @@ pydantic-settings==2.1.0
 # Environment configuration
 python-dotenv==1.0.0
 
-# OpenAI API client
+# Multi-Provider API clients
 openai==1.6.1
+anthropic==0.18.1
+google-generativeai==0.8.3
 
 # Text processing and fuzzy matching
 rapidfuzz==3.5.2

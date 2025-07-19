@@ -5,11 +5,12 @@ A full-stack application for evaluating Large Language Model (LLM) performance w
 ## ✨ Features
 
 - **📁 Dataset Upload**: Support for CSV and JSONL files with drag-and-drop interface
-- **🤖 Model Selection**: Choose from popular LLMs (GPT-4, Claude, Gemini, etc.)
+- **🤖 Multi-Provider Support**: Choose from OpenAI, Anthropic, Google, Groq, and custom providers
 - **📊 Evaluation Metrics**: Exact Match, Fuzzy Match, and Advanced NLP metrics (BLEU, ROUGE, Semantic Similarity)
 - **📈 Score Visualization**: Color-coded progress bars with percentage display
 - **📱 Responsive Design**: Clean, mobile-friendly interface
 - **⚡ Real-time Results**: Live evaluation progress and results display
+- **🔧 Provider Management**: Easy configuration and management of multiple AI providers
 
 ## 🚀 Getting Started
 
@@ -136,7 +137,7 @@ This is a full-stack application with separate frontend and backend components.
 - [x] Batch processing for large datasets
 - [x] Security features (prompt injection detection, rate limiting)
 - [x] Advanced evaluation metrics (BLEU, ROUGE, Semantic Similarity)
-- [ ] Multi-provider support (Anthropic Claude, Google Gemini, Meta Llama)
+- [x] Multi-provider support (OpenAI, Anthropic Claude, Google Gemini, Groq, Custom providers)
 - [ ] Historical evaluation tracking with database
 - [ ] Custom model configuration and fine-tuning
 - [ ] A/B testing between models

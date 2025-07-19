@@ -21,14 +21,102 @@ from app.models import (
     ModelParameters, 
     SecurityAnalysis, 
     SecurityAlert,
-    AdvancedMetrics
+    AdvancedMetrics,
+    ModelInfo
 )
 from .advanced_metrics import calculate_advanced_metrics
+from .providers import (
+    provider_manager, 
+    OpenAIProvider, 
+    AnthropicProvider, 
+    GoogleProvider, 
+    GroqProvider, 
+    CustomProvider,
+    ProviderConfig
+)
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
-openai.api_key = settings.openai_api_key
+# Initialize providers based on configuration
+def initialize_providers():
+    """Initialize available providers based on configuration"""
+    enabled_providers = [p.strip() for p in settings.enabled_providers.split(",")]
+    
+    # Initialize OpenAI provider
+    if "openai" in enabled_providers and settings.openai_api_key:
+        try:
+            openai_config = ProviderConfig(
+                name="openai",
+                api_key=settings.openai_api_key,
+                timeout=30
+            )
+            openai_provider = OpenAIProvider(openai_config)
+            provider_manager.add_provider("openai", openai_provider)
+            logger.info("OpenAI provider initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize OpenAI provider: {e}")
+    
+    # Initialize Anthropic provider
+    if "anthropic" in enabled_providers and settings.anthropic_api_key:
+        try:
+            anthropic_config = ProviderConfig(
+                name="anthropic",
+                api_key=settings.anthropic_api_key,
+                timeout=30
+            )
+            anthropic_provider = AnthropicProvider(anthropic_config)
+            provider_manager.add_provider("anthropic", anthropic_provider)
+            logger.info("Anthropic provider initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize Anthropic provider: {e}")
+    
+    # Initialize Google provider
+    if "google" in enabled_providers and settings.google_api_key:
+        try:
+            google_config = ProviderConfig(
+                name="google",
+                api_key=settings.google_api_key,
+                timeout=30
+            )
+            google_provider = GoogleProvider(google_config)
+            provider_manager.add_provider("google", google_provider)
+            logger.info("Google provider initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize Google provider: {e}")
+    
+    # Initialize Groq provider
+    if "groq" in enabled_providers and settings.groq_api_key:
+        try:
+            groq_config = ProviderConfig(
+                name="groq",
+                api_key=settings.groq_api_key,
+                timeout=30
+            )
+            groq_provider = GroqProvider(groq_config)
+            provider_manager.add_provider("groq", groq_provider)
+            logger.info("Groq provider initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize Groq provider: {e}")
+    
+    # Initialize custom provider
+    if "custom" in enabled_providers and settings.custom_provider_api_key and settings.custom_provider_url:
+        try:
+            custom_config = ProviderConfig(
+                name="custom",
+                api_key=settings.custom_provider_api_key,
+                base_url=settings.custom_provider_url,
+                timeout=30
+            )
+            custom_provider = CustomProvider(custom_config)
+            provider_manager.add_provider("custom", custom_provider)
+            logger.info("Custom provider initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize custom provider: {e}")
+    
+    logger.info(f"Initialized {len(provider_manager.providers)} providers")
+
+# Initialize providers on module import
+initialize_providers()
 
 
 class EvaluationError(Exception):
@@ -196,17 +284,17 @@ def detect_toxicity(text: str) -> bool:
     return any(keyword in text_lower for keyword in toxic_keywords)
 
 
-async def call_openai_api(
+async def call_llm_api(
     prompt: str, 
     model: str, 
     parameters: Optional[ModelParameters] = None
 ) -> Tuple[str, Dict[str, Any]]:
     """
-    Call OpenAI API with the given prompt and parameters
+    Call LLM API with the given prompt and parameters using the appropriate provider
     
     Args:
         prompt: Input prompt
-        model: Model name (e.g., 'gpt-3.5-turbo')
+        model: Model name (e.g., 'gpt-3.5-turbo', 'claude-3-sonnet-20240229')
         parameters: Model parameters
         
     Returns:
@@ -220,60 +308,22 @@ async def call_openai_api(
         if parameters is None:
             parameters = ModelParameters()
         
-        # Map model names to OpenAI model names
-        model_mapping = {
-            "gpt-4": "gpt-4",
-            "gpt-3.5-turbo": "gpt-3.5-turbo",
-            "gpt-4-turbo-preview": "gpt-4-turbo-preview",
-            # Note: Claude, Gemini, and Llama would require different APIs
-            # For now, we'll use GPT models for all requests
-            "claude-3": "gpt-4",  # Fallback to GPT-4
-            "gemini-pro": "gpt-3.5-turbo",  # Fallback to GPT-3.5
-            "llama-2": "gpt-3.5-turbo",  # Fallback to GPT-3.5
-        }
+        # Convert parameters to dict for provider
+        param_dict = parameters.dict(exclude_none=True)
         
-        openai_model = model_mapping.get(model, "gpt-3.5-turbo")
+        # Get the appropriate provider for the model
+        provider = provider_manager.get_provider_for_model(model)
+        if not provider:
+            raise EvaluationError(f"No provider found for model: {model}")
         
-        # Create the API call
-        response = await openai.ChatCompletion.acreate(
-            model=openai_model,
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=parameters.max_tokens,
-            temperature=parameters.temperature,
-            top_p=parameters.top_p,
-            frequency_penalty=parameters.frequency_penalty,
-        )
-        
-        # Extract response text
-        response_text = response.choices[0].message.content.strip()
-        
-        # Create metadata
-        metadata = {
-            "model": openai_model,
-            "usage": response.usage.dict() if response.usage else {},
-            "finish_reason": response.choices[0].finish_reason,
-            "parameters": parameters.dict()
-        }
+        # Call the provider
+        response_text, metadata = await provider.generate(prompt, model, param_dict)
         
         return response_text, metadata
         
-    except openai.error.RateLimitError as e:
-        logger.warning(f"Rate limit hit for model {model}: {str(e)}")
-        raise EvaluationError(f"Rate limit exceeded. Please try again later.")
-    except openai.error.InvalidRequestError as e:
-        logger.error(f"Invalid request for model {model}: {str(e)}")
-        raise EvaluationError(f"Invalid request: {str(e)}")
-    except openai.error.AuthenticationError as e:
-        logger.error(f"Authentication error: {str(e)}")
-        raise EvaluationError("Authentication failed. Please check API key.")
-    except openai.error.OpenAIError as e:
-        logger.error(f"OpenAI API error: {str(e)}")
-        raise EvaluationError(f"API error: {str(e)}")
     except Exception as e:
-        logger.error(f"Unexpected error calling OpenAI API: {str(e)}")
-        raise EvaluationError(f"Unexpected error: {str(e)}")
+        logger.error(f"LLM API error for model {model}: {str(e)}")
+        raise EvaluationError(f"API error: {str(e)}")
 
 
 async def evaluate_single_prompt(
@@ -301,7 +351,7 @@ async def evaluate_single_prompt(
         security_analysis = detect_prompt_injection(prompt_data.prompt)
         
         # Call the model API
-        model_response, api_metadata = await call_openai_api(
+        model_response, api_metadata = await call_llm_api(
             prompt_data.prompt, 
             model, 
             parameters
@@ -337,6 +387,7 @@ async def evaluate_single_prompt(
             fuzzy_match=fuzzy_match,
             toxicity=toxicity,
             model=model,
+            provider=api_metadata.get("provider", "unknown"),
             timestamp=datetime.utcnow().isoformat(),
             parameters=parameters,
             security_flags=security_flags if security_flags else None,
