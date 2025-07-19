@@ -16,6 +16,11 @@ openai==1.6.1
 # Text processing and fuzzy matching
 rapidfuzz==3.5.2
 
+# Advanced NLP metrics
+nltk==3.8.1
+scikit-learn==1.3.2
+numpy==1.24.3
+
 # Rate limiting
 slowapi==0.1.9
 

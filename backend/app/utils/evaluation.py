@@ -20,8 +20,10 @@ from app.models import (
     EvaluationResult, 
     ModelParameters, 
     SecurityAnalysis, 
-    SecurityAlert
+    SecurityAlert,
+    AdvancedMetrics
 )
+from .advanced_metrics import calculate_advanced_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -309,6 +311,14 @@ async def evaluate_single_prompt(
         exact_match = calculate_exact_match(model_response, prompt_data.expected_output)
         fuzzy_match = calculate_fuzzy_match(model_response, prompt_data.expected_output)
         
+        # Calculate advanced metrics
+        advanced_metrics_data = calculate_advanced_metrics(prompt_data.expected_output, model_response)
+        advanced_metrics = AdvancedMetrics(
+            bleu_score=advanced_metrics_data["bleu_score"],
+            rouge_scores=advanced_metrics_data["rouge_scores"],
+            semantic_similarity=advanced_metrics_data["semantic_similarity"]
+        )
+        
         # Toxicity detection
         toxicity = detect_toxicity(model_response)
         
@@ -329,7 +339,8 @@ async def evaluate_single_prompt(
             model=model,
             timestamp=datetime.utcnow().isoformat(),
             parameters=parameters,
-            security_flags=security_flags if security_flags else None
+            security_flags=security_flags if security_flags else None,
+            advanced_metrics=advanced_metrics
         )
         
         evaluation_time = time.time() - start_time

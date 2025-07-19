@@ -72,6 +72,16 @@ class EvaluationRequest(BaseModel):
         return v
 
 
+class AdvancedMetrics(BaseModel):
+    """Advanced evaluation metrics"""
+    bleu_score: float = Field(..., ge=0, le=1, description="BLEU score (0-1)", alias="bleuScore")
+    rouge_scores: Dict[str, Dict[str, float]] = Field(..., description="ROUGE scores (precision, recall, f1)", alias="rougeScores")
+    semantic_similarity: Dict[str, float] = Field(..., description="Semantic similarity scores", alias="semanticSimilarity")
+    
+    class Config:
+        allow_population_by_field_name = True
+
+
 class EvaluationResult(BaseModel):
     """Individual evaluation result"""
     id: Union[int, str] = Field(..., description="Unique result identifier")
@@ -85,6 +95,7 @@ class EvaluationResult(BaseModel):
     timestamp: str = Field(..., description="ISO timestamp of evaluation")
     parameters: Optional[ModelParameters] = Field(None, description="Model parameters used")
     security_flags: Optional[List[str]] = Field(None, description="Security warnings", alias="securityFlags")
+    advanced_metrics: Optional[AdvancedMetrics] = Field(None, description="Advanced evaluation metrics", alias="advancedMetrics")
     
     class Config:
         allow_population_by_field_name = True
@@ -158,6 +169,16 @@ class HealthCheck(BaseModel):
 
 
 # Summary Statistics Models
+class AdvancedMetricsSummary(BaseModel):
+    """Summary of advanced metrics"""
+    average_bleu_score: float = Field(..., ge=0, le=1, description="Average BLEU score", alias="averageBleuScore")
+    average_rouge_f1: Dict[str, float] = Field(..., description="Average ROUGE F1 scores", alias="averageRougeF1")
+    average_semantic_similarity: Dict[str, float] = Field(..., description="Average semantic similarity scores", alias="averageSemanticSimilarity")
+    
+    class Config:
+        allow_population_by_field_name = True
+
+
 class EvaluationSummary(BaseModel):
     """Summary statistics for evaluations"""
     total_prompts: int = Field(..., description="Total number of prompts evaluated")
@@ -167,6 +188,7 @@ class EvaluationSummary(BaseModel):
     security_score: float = Field(..., ge=0, le=100, description="Overall security score")
     models_used: List[str] = Field(..., description="List of models used")
     evaluation_time: float = Field(..., description="Total evaluation time in seconds")
+    advanced_metrics_summary: Optional[AdvancedMetricsSummary] = Field(None, description="Summary of advanced metrics", alias="advancedMetricsSummary")
 
 
 class ScoreDistribution(BaseModel):
