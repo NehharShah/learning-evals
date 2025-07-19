@@ -12,8 +12,15 @@ import os
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
-    # OpenAI Configuration
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
+    # Multi-Provider Configuration
+    openai_api_key: Optional[str] = Field(None, env="OPENAI_API_KEY")
+    anthropic_api_key: Optional[str] = Field(None, env="ANTHROPIC_API_KEY")
+    google_api_key: Optional[str] = Field(None, env="GOOGLE_API_KEY")
+    groq_api_key: Optional[str] = Field(None, env="GROQ_API_KEY")
+    
+    # Custom Provider Configuration
+    custom_provider_url: Optional[str] = Field(None, env="CUSTOM_PROVIDER_URL")
+    custom_provider_api_key: Optional[str] = Field(None, env="CUSTOM_PROVIDER_API_KEY")
     
     # Application Settings
     environment: str = Field("development", env="ENVIRONMENT")
@@ -41,8 +48,9 @@ class Settings(BaseSettings):
     log_level: str = Field("INFO", env="LOG_LEVEL")
     log_format: str = Field("json", env="LOG_FORMAT")
     
-    # OpenAI Model Defaults
+    # Model Defaults
     default_model: str = Field("gpt-3.5-turbo", env="DEFAULT_MODEL")
+    enabled_providers: str = Field("openai", env="ENABLED_PROVIDERS")  # comma-separated list
     max_tokens: int = Field(1000, env="MAX_TOKENS")
     temperature: float = Field(0.7, env="TEMPERATURE")
     top_p: float = Field(1.0, env="TOP_P")

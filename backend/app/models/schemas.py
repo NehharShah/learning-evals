@@ -9,14 +9,41 @@ from datetime import datetime
 from enum import Enum
 
 
+class Provider(str, Enum):
+    """Available LLM providers"""
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    GOOGLE = "google"
+    GROQ = "groq"
+    CUSTOM = "custom"
+
+
 class ModelName(str, Enum):
     """Available LLM models"""
+    # OpenAI Models
     GPT_4 = "gpt-4"
     GPT_35_TURBO = "gpt-3.5-turbo"
     GPT_4_TURBO = "gpt-4-turbo-preview"
-    CLAUDE_3 = "claude-3"
+    
+    # Anthropic Models
+    CLAUDE_3_OPUS = "claude-3-opus-20240229"
+    CLAUDE_3_SONNET = "claude-3-sonnet-20240229"
+    CLAUDE_3_HAIKU = "claude-3-haiku-20240307"
+    
+    # Google Models
+    GEMINI_1_5_PRO = "gemini-1.5-pro"
+    GEMINI_1_5_FLASH = "gemini-1.5-flash"
     GEMINI_PRO = "gemini-pro"
-    LLAMA_2 = "llama-2"
+    
+    # Groq Models
+    LLAMA3_70B = "llama3-70b-8192"
+    LLAMA3_8B = "llama3-8b-8192"
+    MIXTRAL_8X7B = "mixtral-8x7b-32768"
+    
+    # Legacy mappings (for backward compatibility)
+    CLAUDE_3 = "claude-3-sonnet-20240229"  # Map to Claude 3 Sonnet
+    GEMINI_PRO_LEGACY = "gemini-pro"  # Map to Gemini Pro
+    LLAMA_2 = "llama3-70b-8192"  # Map to Llama 3 70B
 
 
 class ExportFormat(str, Enum):
@@ -55,6 +82,20 @@ class ModelParameters(BaseModel):
     max_tokens: int = Field(1000, ge=1, le=4000, description="Maximum tokens to generate")
     top_p: float = Field(1.0, ge=0.0, le=1.0, description="Top-p sampling parameter")
     frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0, description="Frequency penalty")
+    top_k: Optional[int] = Field(None, ge=1, le=100, description="Top-k sampling parameter (Google models)")
+    presence_penalty: Optional[float] = Field(0.0, ge=-2.0, le=2.0, description="Presence penalty (OpenAI models)")
+
+
+class ModelInfo(BaseModel):
+    """Information about a model"""
+    id: str = Field(..., description="Model identifier")
+    name: str = Field(..., description="Display name")
+    provider: str = Field(..., description="Provider name")
+    max_tokens: int = Field(..., description="Maximum tokens")
+    context_length: Optional[int] = Field(None, description="Context length")
+    description: Optional[str] = Field(None, description="Model description")
+    capabilities: Optional[List[str]] = Field(None, description="Model capabilities")
+    is_available: bool = Field(True, description="Whether model is available")
 
 
 class EvaluationRequest(BaseModel):
@@ -92,6 +133,7 @@ class EvaluationResult(BaseModel):
     fuzzy_match: float = Field(..., ge=0, le=100, description="Fuzzy match score (percentage)", alias="fuzzyMatch")
     toxicity: bool = Field(..., description="Whether content is flagged as toxic")
     model: str = Field(..., description="Model used for evaluation")
+    provider: Optional[str] = Field(None, description="Provider used for evaluation")
     timestamp: str = Field(..., description="ISO timestamp of evaluation")
     parameters: Optional[ModelParameters] = Field(None, description="Model parameters used")
     security_flags: Optional[List[str]] = Field(None, description="Security warnings", alias="securityFlags")
