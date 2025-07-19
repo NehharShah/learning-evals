@@ -18,6 +18,7 @@ from app.models import (
     EvaluationResponse,
     EvaluationResult,
     EvaluationSummary,
+    AdvancedMetricsSummary,
     ErrorResponse,
     ModelParameters,
     PromptData
@@ -57,7 +58,8 @@ def generate_summary(results: List[EvaluationResult]) -> EvaluationSummary:
             flagged_prompts=0,
             security_score=100.0,
             models_used=[],
-            evaluation_time=0.0
+            evaluation_time=0.0,
+            advanced_metrics_summary=None
         )
     
     total_prompts = len(results)
@@ -88,6 +90,48 @@ def generate_summary(results: List[EvaluationResult]) -> EvaluationSummary:
     # Get unique models used
     models_used = list(set(r.model for r in results))
     
+    # Calculate advanced metrics summary
+    advanced_metrics_summary = None
+    if any(r.advanced_metrics for r in results):
+        bleu_scores = [r.advanced_metrics.bleu_score for r in results if r.advanced_metrics]
+        average_bleu_score = sum(bleu_scores) / len(bleu_scores) if bleu_scores else 0.0
+        
+        # Calculate average ROUGE F1 scores
+        rouge_f1_scores = {"rouge-1": [], "rouge-2": [], "rouge-l": []}
+        for result in results:
+            if result.advanced_metrics:
+                for rouge_type in rouge_f1_scores:
+                    if rouge_type in result.advanced_metrics.rouge_scores:
+                        rouge_f1_scores[rouge_type].append(
+                            result.advanced_metrics.rouge_scores[rouge_type]["f1"]
+                        )
+        
+        average_rouge_f1 = {
+            rouge_type: sum(scores) / len(scores) if scores else 0.0
+            for rouge_type, scores in rouge_f1_scores.items()
+        }
+        
+        # Calculate average semantic similarity scores
+        semantic_scores = {"tfidf": [], "jaccard": [], "sequence": []}
+        for result in results:
+            if result.advanced_metrics:
+                for method in semantic_scores:
+                    if method in result.advanced_metrics.semantic_similarity:
+                        semantic_scores[method].append(
+                            result.advanced_metrics.semantic_similarity[method]
+                        )
+        
+        average_semantic_similarity = {
+            method: sum(scores) / len(scores) if scores else 0.0
+            for method, scores in semantic_scores.items()
+        }
+        
+        advanced_metrics_summary = AdvancedMetricsSummary(
+            average_bleu_score=average_bleu_score,
+            average_rouge_f1=average_rouge_f1,
+            average_semantic_similarity=average_semantic_similarity
+        )
+    
     return EvaluationSummary(
         total_prompts=total_prompts,
         average_exact_match=average_exact_match,
@@ -95,7 +139,8 @@ def generate_summary(results: List[EvaluationResult]) -> EvaluationSummary:
         flagged_prompts=flagged_prompts,
         security_score=security_score,
         models_used=models_used,
-        evaluation_time=0.0  # Will be calculated by the endpoint
+        evaluation_time=0.0,  # Will be calculated by the endpoint
+        advanced_metrics_summary=advanced_metrics_summary
     )
 
 

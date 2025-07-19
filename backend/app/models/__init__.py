@@ -18,6 +18,7 @@ from .schemas import (
     EvaluationResult,
     EvaluationResponse,
     EvaluationProgress,
+    AdvancedMetrics,
     
     # Export Models
     ExportRequest,
@@ -33,6 +34,7 @@ from .schemas import (
     
     # Summary Models
     EvaluationSummary,
+    AdvancedMetricsSummary,
     ScoreDistribution,
 )
 
@@ -46,6 +48,7 @@ __all__ = [
     "EvaluationResult",
     "EvaluationResponse",
     "EvaluationProgress",
+    "AdvancedMetrics",
     "ExportRequest",
     "ExportResponse",
     "SecurityAlert",
@@ -53,5 +56,6 @@ __all__ = [
     "ErrorResponse",
     "HealthCheck",
     "EvaluationSummary",
+    "AdvancedMetricsSummary",
     "ScoreDistribution",
 ] 
