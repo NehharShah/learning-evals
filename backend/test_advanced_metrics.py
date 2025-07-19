@@ -8,12 +8,19 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
 
-from app.utils.advanced_metrics import (
-    calculate_bleu_score,
-    calculate_rouge_score,
-    calculate_semantic_similarity,
-    calculate_advanced_metrics
-)
+# Import only the advanced metrics module directly to avoid config dependencies
+try:
+    from app.utils.advanced_metrics import (
+        calculate_bleu_score,
+        calculate_rouge_score,
+        calculate_semantic_similarity,
+        calculate_advanced_metrics
+    )
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    print("Make sure you're running this from the backend directory and have installed the requirements:")
+    print("pip install -r requirements.txt")
+    sys.exit(1)
 
 def test_advanced_metrics():
     """Test the advanced metrics with sample data"""
