@@ -11,6 +11,7 @@ import { Search, ArrowUpDown, AlertTriangle } from "lucide-react"
 import { SecurityFlag } from "../security-flag"
 import { ScoreBars } from "../score-bars"
 import { DiffModal } from "../diff-modal"
+import { AdvancedMetricsDisplay } from "./advanced-metrics-display"
 
 interface EvaluationResult {
   id: number
@@ -22,6 +23,19 @@ interface EvaluationResult {
   toxicity: boolean
   model: string
   timestamp: string
+  advancedMetrics?: {
+    bleuScore: number
+    rougeScores: {
+      "rouge-1": { precision: number; recall: number; f1: number }
+      "rouge-2": { precision: number; recall: number; f1: number }
+      "rouge-l": { precision: number; recall: number; f1: number }
+    }
+    semanticSimilarity: {
+      tfidf: number
+      jaccard: number
+      sequence: number
+    }
+  }
 }
 
 interface EvaluationTableProps {
@@ -201,6 +215,7 @@ export function EvaluationTable({ results = [], selectedModels = [] }: Evaluatio
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
+                <TableHead className="w-[200px]">Advanced Metrics</TableHead>
                 <TableHead className="w-[50px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -247,6 +262,22 @@ export function EvaluationTable({ results = [], selectedModels = [] }: Evaluatio
                             <Badge key={result.id} variant="secondary" className="text-xs">
                               {result.model}
                             </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-2">
+                          {promptResults.map((result) => (
+                            <div key={result.id}>
+                              {result.advancedMetrics ? (
+                                <AdvancedMetricsDisplay 
+                                  metrics={result.advancedMetrics} 
+                                  className="w-full"
+                                />
+                              ) : (
+                                <span className="text-sm text-muted-foreground">No advanced metrics</span>
+                              )}
+                            </div>
                           ))}
                         </div>
                       </TableCell>
@@ -302,6 +333,16 @@ export function EvaluationTable({ results = [], selectedModels = [] }: Evaluatio
                         <Badge variant="outline" className="text-xs">
                           {result.model || "Unknown"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {result.advancedMetrics ? (
+                          <AdvancedMetricsDisplay 
+                            metrics={result.advancedMetrics} 
+                            className="w-full"
+                          />
+                        ) : (
+                          <span className="text-sm text-muted-foreground">No advanced metrics</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <DiffModal
